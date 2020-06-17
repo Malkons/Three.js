@@ -1,3 +1,4 @@
 # Three.js
 
-https://malkons.github.io/Kendo-UI/
+
+http://malkons.github.io/Three.js/
