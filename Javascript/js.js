@@ -18,7 +18,7 @@ controls = new THREE.OrbitControls(camera, renderer.domElement);
 
 var geometry = new THREE.BoxGeometry(1, 1, 1);
 
-var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: });
+var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
 var cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 
