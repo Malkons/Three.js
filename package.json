@@ -1,0 +1,25 @@
+{
+  "name": "three",
+  "version": "1.0.0",
+  "description": "1. Clone the Repo: `https://github.com/Malkons/Three.js.git`\r 2. Get node.js if you don't already: [https://nodejs.org/en/](https://nodejs.org/en/)\r 3. In the root of the directory install npm dependencies: `npm i`\r 4. In the Command line in the same directory you installed node type: `npm install express` \r 5. In the Command Line run: `node server.js`\r 6. The server is listing on port 8080. Navigate here in a browser [http://localhost:8080](http://localhost:8080)\r 7. http://malkons.github.io/Three.js/",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "stats.js": "^0.17.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Malkons/Three.js.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Malkons/Three.js/issues"
+  },
+  "homepage": "https://github.com/Malkons/Three.js#readme"
+}

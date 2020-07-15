@@ -1,13 +1,17 @@
+
+
+var container, stats;
 var scene = new THREE.Scene();
 scene.background = new THREE.Color(0xcce0ff);
 scene.fog = new THREE.Fog(0xcce0ff, 500, 10000);
 
 var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-var renderer = new THREE.WebGLRenderer({ antialias: true });
+container = document.createElement('div');
+document.body.appendChild(container);
 
-var keyboard = {};
-var player = { height: 1.8, speed: 0.2, turnSpeed: Math.PI * 0.02 };
+var renderer = new THREE.WebGLRenderer({ antialias: true });
+container.appendChild(renderer.domElement);
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -37,6 +41,8 @@ control.addEventListener('dragging-changed', function (event) {
 	orbit.enabled = !event.value;
 
 });
+
+
 //logo cube
 var geometry = new THREE.BoxGeometry(2, 2, 2);
 var cubeMaterials = [
@@ -105,7 +111,7 @@ table.add(tableLeg3);
 table.add(tableLeg4);
 
 scene.add(table);
-control.attach(table);
+//control.attach(table);
 scene.add(control);
 
 
@@ -167,9 +173,44 @@ lenseHolder.position.x += 10;
 lenseHolder.position.z += -10
 scene.add(lenseHolder);
 
+//GUI
+var options = {
+	rotationX: .01,
+	rotationY: .005,
+	reset: function () {
+		this.rotationX = .01;
+		this.rotationY = .005;
+		cube.scale.x = 1;
+		cube.scale.y = 1;
+		cube.scale.z = 1;
+	},
+	stop: function () {
+		this.rotationX = 0;
+		this.rotationY = 0;
+	},
+};
+
 //camera position
 camera.position.z = 5;
-camera.lookAt(new THREE.Vector3(0, player.height, 0));
+
+stats = new Stats();
+container.appendChild(stats.dom);
+
+var gui = new dat.GUI();
+
+var box = gui.addFolder('Cube');
+box.add(cube.scale, 'x', 0, 10).name('Width').listen();
+box.add(cube.scale, 'y', 0, 10).name('Height').listen();
+box.add(cube.scale, 'z', 0, 10).name('Length').listen();
+box.open();
+
+var velocity = gui.addFolder('Velocity');
+velocity.add(options, 'rotationX', -0.5, 0.5).name('X').listen();
+velocity.add(options, 'rotationY', -0.5, 0.5).name('Y').listen();
+velocity.open();
+
+gui.add(options, 'reset');
+gui.add(options, 'reset');
 
 var render = function () {
 
@@ -179,34 +220,9 @@ var render = function () {
 var update = function () {
 	cube.rotation.x += 0.01;
 	cube.rotation.y += 0.005;
-
-	// Keyboard movement inputs
-	if (keyboard[87]) { // W key
-		camera.position.x += Math.sin(camera.rotation.y) * player.speed;
-		camera.position.z += -Math.cos(camera.rotation.y) * player.speed;
-	}
-	if (keyboard[83]) { // S key
-		camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
-		camera.position.z -= -Math.cos(camera.rotation.y) * player.speed;
-	}
-	if (keyboard[65]) { // A key
-		// Redirect motion by 90 degrees
-		camera.position.x -= Math.sin(camera.rotation.y + Math.PI / 2) * player.speed;
-		camera.position.z -= -Math.cos(camera.rotation.y + Math.PI / 2) * player.speed;
-	}
-	if (keyboard[68]) { // D key
-		camera.position.x -= Math.sin(camera.rotation.y - Math.PI / 2) * player.speed;
-		camera.position.z -= -Math.cos(camera.rotation.y - Math.PI / 2) * player.speed;
-	}
-
-	// Keyboard turn inputs
-	if (keyboard[81]) { // Q key
-		camera.rotation.y -= player.turnSpeed;
-	}
-	if (keyboard[69]) { // E key
-		camera.rotation.y += player.turnSpeed;
-	}
-
+	stats.update();
+	cube.rotation.x += options.rotationX;
+	cube.rotation.y += options.rotationY;
 };
 
 var animate = function () {
@@ -214,15 +230,7 @@ var animate = function () {
 	update();
 	render();
 };
-function keyDown(event) {
-	keyboard[event.keyCode] = true;
-}
-
-function keyUp(event) {
-	keyboard[event.keyCode] = false;
-}
-
-window.addEventListener('keydown', keyDown);
-window.addEventListener('keyup', keyUp);
 
 animate();
+
+
