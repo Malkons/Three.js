@@ -193,9 +193,11 @@ var options = {
 //camera position
 camera.position.z = 5;
 
+//stats
 stats = new Stats();
 container.appendChild(stats.dom);
 
+//GUI
 var gui = new dat.GUI();
 
 var box = gui.addFolder('Cube');
@@ -212,6 +214,7 @@ velocity.open();
 gui.add(options, 'reset');
 gui.add(options, 'reset');
 
+//render to the page
 var render = function () {
 
 	renderer.render(scene, camera);
