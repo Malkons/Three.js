@@ -1,5 +1,12 @@
 
 
+// used for drag and drop
+var plane;
+var selectedObject;
+var offset = new THREE.Vector3();
+var objects = [];
+
+var orbit
 var container, stats;
 var scene = new THREE.Scene();
 scene.background = new THREE.Color(0xcce0ff);
@@ -24,24 +31,20 @@ window.addEventListener("resize", function () {
 	camera.updateProjectionMatrix();
 });
 
+plane = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000, 18, 18), new THREE.MeshBasicMaterial({
+	color: 0x00ff00,
+	opacity: 0.25,
+	transparent: true
+}));
+plane.visible = false;
+scene.add(plane);
+
 //orbit cammera
-var orbit = new THREE.OrbitControls(camera, renderer.domElement);
-orbit.update();
-orbit.addEventListener('change', render);
+orbit = new THREE.OrbitControls(camera, renderer.domElement);
 
 //adds colored axis
 var axesHelper = new THREE.AxesHelper(5);
 scene.add(axesHelper);
-
-var control = new THREE.TransformControls(camera, renderer.domElement);
-control.addEventListener('change', render);
-
-control.addEventListener('dragging-changed', function (event) {
-
-	orbit.enabled = !event.value;
-
-});
-
 
 //logo cube
 var geometry = new THREE.BoxGeometry(2, 2, 2);
@@ -56,6 +59,7 @@ var cubeMaterials = [
 var material = new THREE.MeshFaceMaterial(cubeMaterials);
 var cube = new THREE.Mesh(geometry, material);
 cube.position.y += 2;
+objects.push(cube);
 scene.add(cube);
 
 //ground
@@ -109,10 +113,9 @@ table.add(tableLeg1);
 table.add(tableLeg2);
 table.add(tableLeg3);
 table.add(tableLeg4);
-
+objects.push(table);
+console.log(objects);
 scene.add(table);
-//control.attach(table);
-scene.add(control);
 
 
 //laser
@@ -212,7 +215,6 @@ velocity.add(options, 'rotationY', -0.5, 0.5).name('Y').listen();
 velocity.open();
 
 gui.add(options, 'reset');
-gui.add(options, 'reset');
 
 //render to the page
 var render = function () {
@@ -223,6 +225,7 @@ var render = function () {
 var update = function () {
 	cube.rotation.x += 0.01;
 	cube.rotation.y += 0.005;
+	orbit.update();
 	stats.update();
 	cube.rotation.x += options.rotationX;
 	cube.rotation.y += options.rotationY;
@@ -233,7 +236,79 @@ var animate = function () {
 	update();
 	render();
 };
+document.onmousemove = function (event) {
+	// make sure we don't access anything else
+	event.preventDefault();
 
+	// get the mouse positions
+	var mouse_x = (event.clientX / window.innerWidth) * 2 - 1;
+	var mouse_y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+	// get the 3D position and create a raycaster
+	var vector = new THREE.Vector3(mouse_x, mouse_y, 0.5);
+	vector.unproject(camera);
+	var raycaster = new THREE.Raycaster(camera.position,
+		vector.sub(camera.position).normalize());
+
+	// first check if we've already selected an object by clicking
+	if (selectedObject) {
+		// check the position where the plane is intersected
+		var intersects = raycaster.intersectObject(plane);
+		// reposition the selectedobject based on the intersection with the plane
+		selectedObject.position.copy(intersects[0].point.sub(offset));
+	} else {
+		// if we haven't selected an object, we check if we might need
+		// to reposition our plane. We need to do this here, since
+		// we need to have this position before the onmousedown
+		// to calculate the offset.
+		var intersects = raycaster.intersectObjects(objects);
+
+		if (intersects.length > 0) {
+			// now reposition the plane to the selected objects position
+			plane.position.copy(intersects[0].object.position);
+			// and align with the camera.
+			plane.lookAt(camera.position);
+
+		}
+	}
+};
+
+document.onmousedown = function (event) {
+
+	// get the mouse positions
+	var mouse_x = (event.clientX / window.innerWidth) * 2 - 1;
+	var mouse_y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+	// use the projector to check for intersections. First thing to do is unproject
+	// the vector.
+	var vector = new THREE.Vector3(mouse_x, mouse_y, 0.5);
+	// we do this by using the unproject function which converts the 2D mouse
+	// position to a 3D vector.
+	vector.unproject(camera);
+
+	// now we cast a ray using this vector and see what is hit.
+	var raycaster = new THREE.Raycaster(camera.position,
+		vector.sub(camera.position).normalize());
+
+	// intersects contains an array of objects that might have been hit
+	var intersects = raycaster.intersectObjects(objects);
+
+	if (intersects.length > 0) {
+		orbit.enabled = false;
+
+		// the first one is the object we'll be moving around
+		selectedObject = intersects[0].object;
+
+		// and calculate the offset
+		var intersects = raycaster.intersectObject(plane);
+		offset.copy(intersects[0].point).sub(plane.position);
+	}
+};
+
+document.onmouseup = function (event) {
+	orbit.enabled = true;
+	selectedObject = null;
+}
 animate();
 
 
